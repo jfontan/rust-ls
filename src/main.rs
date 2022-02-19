@@ -1,3 +1,5 @@
+use chrono;
+use chrono::{DateTime, Local};
 use std::fs;
 use std::io;
 use std::io::prelude::*;
@@ -62,6 +64,14 @@ fn format_group(gid: u32) -> String {
     }
 }
 
+fn format_time(unix: i64) -> String {
+    // let d = DateTime::<Local>::from(unix)
+    let t = chrono::NaiveDateTime::from_timestamp(unix, 0);
+    t.format("%b %e %H:%M").to_string()
+
+    // String::from("")
+}
+
 fn format_file(entry: &fs::DirEntry) -> io::Result<String> {
     let path = entry.path();
     let metadata = fs::symlink_metadata(path)?;
@@ -72,12 +82,14 @@ fn format_file(entry: &fs::DirEntry) -> io::Result<String> {
     let links = metadata.nlink();
 
     let line = format!(
-        "{}{} {} {} {} {}",
+        "{}{} {} {} {} {} {} {}",
         directory,
         mode,
         links,
         format_user(metadata.uid()),
         format_group(metadata.gid()),
+        metadata.size(),
+        format_time(metadata.mtime()),
         entry.file_name().to_str().unwrap(),
     );
     Ok(line)
